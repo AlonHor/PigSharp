@@ -23,7 +23,8 @@ fun main() {
             "\"" isToken QUOTES thenState IN_STRING
 //            matches("\\s*[a-zA-Z]\\s*") isToken FUNCTION_CALL
             matches("[a-zA-Z_]+") isToken WORD
-            matches("\\s") isToken WHITESPACE
+            matches("\\d+") isToken INT
+            matches("\\d+\\.\\d+") isToken DOUBLE
             matches("\\n") isToken WHITESPACE
             matches(".*//.*") isToken COMMENT
             matches("\\s*\\(\\s*") isToken PAREN_OPEN
@@ -35,12 +36,13 @@ fun main() {
             matches("\\s*;\\s*") isToken SEMICOLON
             matches("\\s*,\\s*") isToken COMMA
             matches("\\s*!\\s*") isToken UNARY_OPERATOR
-            matches("[+\\-*/^%<>!&|]") isToken MATH_OPERATOR
+            matches("\\s*=\\s*") isToken SET_OPERATOR // =
             matches("\\s*((==)|(<=)|(>=)|(!=)|[<>])\\s*") isToken COMPARISON_OPERATOR // == < > <= >= !=
             matches("\\s*(\\+=|-=)\\s*") isToken ASSIGNMENT_OPERATOR // += -=
-            matches("\\s*=\\s*") isToken SET_OPERATOR // =
-//            matches("\\s*(?<= |\\w)=(?= |\\w)\\s*") isToken SET_OPERATOR // =
+            // matches("\\s*(?<= |\\w)=(?= |\\w)\\s*") isToken SET_OPERATOR // =
             matches("\\s+(and|or)\\s+") isToken LOGICAL_OPERATOR // and or
+            matches("[+\\-*/^%<>!&|]") isToken MATH_OPERATOR
+            matches("\\s+") isToken WHITESPACE
         }
         IN_STRING state {
             // triple quotes to make it a raw string, so that we don't need to
@@ -51,14 +53,28 @@ fun main() {
     }
     val parser: HashMap<ArrayList<String>, (List<String>?, List<String>?, List<Int>?, List<Double>?, List<Boolean>?, HashMap<String, String>?) -> Pair<Boolean, String>> = hashMapOf()
 //    print ("hello")
-    parser[arrayListOf("WORD:print", "WHITESPACE", "PAREN_OPEN", "QUOTES", "STRING_CONTENT", "QUOTES", "PAREN_CLOSE", "SEMICOLON")] =
+    parser[arrayListOf("WORD:print", "PAREN_OPEN", "QUOTES", "STRING_CONTENT", "QUOTES", "PAREN_CLOSE", "SEMICOLON")] =
+        { _, string, _, _, _, _ ->
+            print(string?.joinToString(" ") { it })
+            Pair(true, "")
+        }
+
+//    println("hello")
+    parser[arrayListOf("WORD:println", "PAREN_OPEN", "QUOTES", "STRING_CONTENT", "QUOTES", "PAREN_CLOSE", "SEMICOLON")] =
         { _, string, _, _, _, _ ->
             println(string?.joinToString(" ") { it })
             Pair(true, "")
         }
 
 //    print (x)
-    parser[arrayListOf("WORD:print", "WHITESPACE", "PAREN_OPEN", "WORD", "PAREN_CLOSE", "SEMICOLON")] =
+    parser[arrayListOf("WORD:print", "PAREN_OPEN", "WORD", "PAREN_CLOSE", "SEMICOLON")] =
+        { name, _, _, _, _, stringVariables ->
+            print(stringVariables?.get(name?.joinToString(" ") { it }))
+            Pair(true, "")
+        }
+
+//    println(x)
+    parser[arrayListOf("WORD:println", "PAREN_OPEN", "WORD", "PAREN_CLOSE", "SEMICOLON")] =
         { name, _, _, _, _, stringVariables ->
             println(stringVariables?.get(name?.joinToString(" ") { it }))
             Pair(true, "")
@@ -72,7 +88,7 @@ fun main() {
         }
 
 
-    val bufferedReader: BufferedReader = File("src/main/kotlin/main.psh").bufferedReader()
+    val bufferedReader: BufferedReader = File("src/main/kotlin/main.pigsh").bufferedReader()
     val inputString = bufferedReader.use { it.readText() }
     run(lexer, parser, inputString)
 }
@@ -80,7 +96,7 @@ fun main() {
 fun run(lexer: LixyLexer, parser: HashMap<ArrayList<String>, (List<String>?, List<String>?, List<Int>?, List<Double>?, List<Boolean>?, HashMap<String, String>?) -> Pair<Boolean, String>>, s: String) {
     val tokens = lexer.tokenize(s = s)
     val variables: HashMap<String, String> = parse(tokens, parser)
-    println(variables)
+    println("\n\nvariables: $variables")
 }
 
 fun parse(tokens: List<LixyToken>, parser: HashMap<ArrayList<String>, (List<String>?, List<String>?, List<Int>?, List<Double>?, List<Boolean>?, HashMap<String, String>?) -> Pair<Boolean, String>>): HashMap<String, String> {

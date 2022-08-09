@@ -1,0 +1,5 @@
+println("Welcome!");
+str greeting = "Hello, ";
+str name = "John";
+print(greeting);
+print(name);

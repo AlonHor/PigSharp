@@ -1,5 +1,0 @@
-print ("Hello World!");
-str greeting="hi";
-print (greeting);
-str name="John";
-print (name);
