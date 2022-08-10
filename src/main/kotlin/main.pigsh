@@ -6,3 +6,4 @@ str name = "John";
 bool is_empty = false;
 println(greeting);
 println(name);
+if (name == "John"){};

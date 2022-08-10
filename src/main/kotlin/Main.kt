@@ -30,14 +30,15 @@ fun main() {
             matches(".*//.*") isToken COMMENT
             matches("\\s*\\(\\s*") isToken PAREN_OPEN
             matches("\\s*\\)\\s*") isToken PAREN_CLOSE
+            matches("\\s*\\{\\s*") isToken BRACE_OPEN
             matches("\\s*}\\s*") isToken BRACE_CLOSE
             matches("\\s*\\[\\s*") isToken BRACKET_OPEN
             matches("\\s*]\\s*") isToken BRACKET_CLOSE
             matches("\\s*;\\s*") isToken SEMICOLON
             matches("\\s*,\\s*") isToken COMMA
             matches("\\s*!\\s*") isToken UNARY_OPERATOR
-            matches("\\s*=\\s*") isToken SET_OPERATOR // =
             matches("\\s*((==)|(<=)|(>=)|(!=)|[<>])\\s*") isToken COMPARISON_OPERATOR // == < > <= >= !=
+            matches("\\s*=\\s*") isToken SET_OPERATOR // =
             matches("\\s*(\\+=|-=)\\s*") isToken ASSIGNMENT_OPERATOR // += -=
             // matches("\\s*(?<= |\\w)=(?= |\\w)\\s*") isToken SET_OPERATOR // =
             matches("\\s+(and|or)\\s+") isToken LOGICAL_OPERATOR // and or
@@ -105,6 +106,22 @@ fun main() {
             Pair(true, "")
         }
 
+//    if var == string?
+    parser[arrayListOf("WORD:if", "PAREN_OPEN", "WORD", "COMPARISON_OPERATOR", "QUOTES", "STRING_CONTENT", "QUOTES", "PAREN_CLOSE", "BRACE_OPEN", "BRACE_CLOSE", "SEMICOLON")] =
+        { name, value, variables ->
+            if (variables[name.joinToString(" ") { it }] == value[0]) println("EQUAL!")
+            else {
+                println("NOT EQUAL!")
+                println("${variables[name.joinToString(" ") { it }]} != ${value[0]}")
+                /*
+                 * Sometimes throws NOT EQUAL for equal values because of the way the parser works.
+                 * To fix this, I will need to make the parser run line by line and not just one big string.
+                 * This will require a lot of work, but it will be worth it
+                 */
+            }
+            Pair(true, "")
+        }
+
 
     val bufferedReader: BufferedReader = File("src/main/kotlin/main.pigsh").bufferedReader()
     val inputString = bufferedReader.use { it.readText() }
@@ -119,7 +136,7 @@ fun run(lexer: LixyLexer, parser: HashMap<ArrayList<String>, (List<String>, Muta
 
 fun parse(tokens: List<LixyToken>, parser: HashMap<ArrayList<String>, (List<String>, MutableList<String>, HashMap<String, String>) -> Pair<Boolean, String>>): HashMap<String, String> {
     val variables: HashMap<String, String> = HashMap()
-    val savedWords: List<String> = listOf("print", "println", "str", "bool", "int", "double")
+    val savedWords: List<String> = listOf("print", "println", "str", "bool", "int", "double", "if")
     for (key in parser.keys) {
         for ((tokenIndex, _) in tokens.withIndex()) {
             val variableNames: MutableList<String> = mutableListOf()
