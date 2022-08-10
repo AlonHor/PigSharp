@@ -30,7 +30,6 @@ fun main() {
             matches(".*//.*") isToken COMMENT
             matches("\\s*\\(\\s*") isToken PAREN_OPEN
             matches("\\s*\\)\\s*") isToken PAREN_CLOSE
-            matches("\\s*\\{\\s*") isToken BRACE_OPEN
             matches("\\s*}\\s*") isToken BRACE_CLOSE
             matches("\\s*\\[\\s*") isToken BRACKET_OPEN
             matches("\\s*]\\s*") isToken BRACKET_CLOSE
@@ -120,7 +119,7 @@ fun run(lexer: LixyLexer, parser: HashMap<ArrayList<String>, (List<String>, Muta
 
 fun parse(tokens: List<LixyToken>, parser: HashMap<ArrayList<String>, (List<String>, MutableList<String>, HashMap<String, String>) -> Pair<Boolean, String>>): HashMap<String, String> {
     val variables: HashMap<String, String> = HashMap()
-    val savedWords: List<String> = listOf("print", "println", "str", "bool", "int")
+    val savedWords: List<String> = listOf("print", "println", "str", "bool", "int", "double")
     for (key in parser.keys) {
         for ((tokenIndex, _) in tokens.withIndex()) {
             val variableNames: MutableList<String> = mutableListOf()
